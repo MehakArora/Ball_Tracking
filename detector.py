@@ -10,17 +10,21 @@ import cv2
 import matplotlib.pyplot as plt
 
 class Detectors(object):
-    
+
     def __init__ (self):
-        
+
         #To create the object for backgrounf subtraction from individual frames
-        self.fgbg = cv2.createBackgrounndSubtractorMOG2()
-    
-    def detectBall(img):
+        self.fgbg = cv2.createBackgroundSubtractorMOG2(detectShadows = False)
+
+    def detectBall(self, img):
+
+        #Convert RGB to Gray and apply background subtraction
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        fgmask = self.fgbg.apply(gray)
 
         # Detect all contours in the image
-        contours, hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-          
+        contours, hierarchy = cv2.findContours(fgmask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
         #Find valid contours (radius greater than 10) and their minenclosing circles
         circles = []
         validContours = []
@@ -32,7 +36,7 @@ class Detectors(object):
                     validContours.append(contour)
             except ZeroDivisionError:
                 pass
-          
+
         #Find convex hull of sets of neighbouring contours
         l = len(circles)
         sets = np.arange(1,l+1,1)
@@ -44,13 +48,13 @@ class Detectors(object):
                 dist = np.linalg.norm(circles[i][0:2]-circles[j][0:2])
                 if(dist < thresh):
                     sets[j] = sets[i]
-        
+
         convHull = []
         for i in np.unique(sets):
             idx = np.where(sets == i)
             cont = np.vstack(validContours[i] for i in idx[0])
             convHull.append(cv2.convexHull(cont))
-        
+
         similarity = []
         centers = []
         for ch in convHull:
@@ -65,13 +69,13 @@ class Detectors(object):
                 similarity.append(cv2.matchShapes(ch, circle,1,0.0)/len(ch))
             except ZeroDivisionError:
                 pass
-          
+
         #find the most similar convex hull and min enclosing circles
         try:
             index = np.argsort(similarity)[0]
-            cv2.circle(img, (int(centers[index][0]), int(centers[index][1])), int(centers[index][2]), (255,255,255), 3)
-            plt.imshow(img)
-            plt.show()
+            #cv2.circle(img, (int(centers[index][0]), int(centers[index][1])), int(centers[index][2]), (255,255,255), 3)
+            #plt.imshow(img)
+            #plt.show()
             return centers[index]
         except IndexError:
-            return ['null', 'null', 'null']
+            return None
