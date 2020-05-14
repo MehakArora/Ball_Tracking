@@ -11,7 +11,7 @@ High-level Steps implemented:
 1. Gray-level Conversion and Background Subtraction
 2. Using OpenCV's findContours function to identify contours and processing them to identify circular objects.
 3. Detecting object in each frame of the video. 
-4. Using Kalman Filters to judge how the motion of the ball is being predicted, so we can eventually move on to detecting objects after skipping certain number of frames in between.
+4. Using Kalman Filters we can eventually move on to detecting objects after skipping certain number of frames in between. This will also be useful in tracking objects that move out of the frame of the video.
 
 
 References:
